@@ -1,0 +1,50 @@
+name: mastodon
+version: 'v1.0'
+summary: Single-line elevator pitch for your amazing snap # 79 char long summary
+description: |
+  This is my-snap's description. You have a paragraph or two to tell the
+  most important story about your snap. Keep it under 100 words though,
+  we live in tweetspace and your description wants to look good in the snap
+  store.
+
+grade: devel # must be 'stable' to release into candidate/stable channels
+confinement: strict # use 'strict' once you have the right plugs and slots
+
+apps:
+  rake:
+    command: env RUBYLIB=$SNAP/usr/lib/ruby/2.3.0:$SNAP/usr/lib/x86_64-linux-gnu/ruby/2.3.0/ $SNAP/usr/bin/ruby $SNAP/usr/bin/rake
+    plugs: [network]
+  server:
+    command: env RUBYLIB=$SNAP/usr/lib/ruby/2.3.0:$SNAP/usr/lib/x86_64-linux-gnu/ruby/2.3.0/ $SNAP/usr/bin/ruby $SNAP/lib/node_modules/mastodon/bin/rails s -d
+    daemon: simple
+    plugs: [network-bind]
+    
+parts:
+  mastodon:
+    plugin: nodejs
+    source: .
+    build-packages:
+      - postgresql-server-dev-9.5
+      - libxml2-dev
+      - libxslt1-dev
+      - ruby-dev
+    stage-packages:
+      - libpq5
+      - libxml2
+      - libxslt1.1
+      - ffmpeg
+      - file
+      - imagemagick
+      - ruby
+      - rake
+      - postgresql-9.5
+    node-engine: 4.6.0
+    node-packages:
+      - npm@3
+      - yarn
+    build: |
+      export RAILS_ENV=production
+      export NODE_ENV=production
+      gem install bundler
+      bundle install --deployment --without test development
+      yarn
